@@ -63,9 +63,53 @@ public class Main {
             System.out.println("[ERROR] Permission 3 | " + e.getMessage());
         }
     }
+
+    public static void roleTest()
+    {
+        System.out.println("===========Role test===========");
+        Role root = null;
+        try{
+            root = new Role("root", "CAN DO ANYTHING");
+            System.out.println("[SUCCESS] Role 1 (valid) | " + root);
+            System.out.println("format: " + root.format());
+        }
+        catch(Exception e)
+        {
+            System.out.println("[ERROR] Role 1 | " + e.getMessage());
+        }
+        try{
+            root = new Role("        ", "description");
+            System.out.println("[SUCCESS] Role 2 (invalid) | " + root);
+        } catch (Exception e)
+        {
+            System.out.println("[ERROR] Role 2 (invalid) | " + e.getMessage());
+        }
+
+        Permission create = new Permission("create","Users", "Can create users");
+        root.addPermission(create);
+
+        boolean t1 = root.hasPermission(create);
+        System.out.println((t1 ? "[SUCCESS]" : "[ERROR]") + " Role 3 hasPermission(permission) [true]: " + t1);
+
+        boolean t2 = root.hasPermission("create","users");
+        System.out.println((t2 ? "[SUCCESS]" : "[ERROR]") + " Role 4 hasPermission(permissionName, resource) [true]: " + t2);
+
+        boolean t3 = root.hasPermission("delete", "user");
+        System.out.println((t3 ? "[SUCCESS]" : "[ERROR]") + " Role 5 hasPermission(permissionName, resource) [false]: " + t3);
+
+        root.removePermission(create);
+
+        boolean hasAfterRemove = root.hasPermission(create);
+        System.out.println((hasAfterRemove ? "[SUCCESS]" : "[ERROR]") + " Role 6 hasPermission(permission) [false]: " + hasAfterRemove);
+
+        Role other = new Role("Other", "Example description");
+        boolean eq = root.equals(other);
+        System.out.println((hasAfterRemove ? "[SUCCESS]" : "[ERROR]") + " Role 7 equals(Role2) [false]: " + eq);
+    }
     public static void main(String args[])
     {
         userTest();
         permissionTest();
+        roleTest();
     }
 }
