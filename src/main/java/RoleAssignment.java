@@ -4,5 +4,5 @@ public interface RoleAssignment {
     Role role();
     AssignmentMetadata metadata();
     boolean isActive();
-    String assigmentType();
+    String assignmentType();
 }
