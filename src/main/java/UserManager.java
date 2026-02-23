@@ -102,6 +102,11 @@ public class UserManager implements Repository<User> {
         return Objects.equals(usersByUsername, that.usersByUsername);
     }
 
+    public boolean exists(String username)
+    {
+        return usersByUsername.containsKey(username);
+    }
+
     @Override
     public int hashCode()
     {
