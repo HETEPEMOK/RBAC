@@ -24,6 +24,6 @@ public class UserFilters {
 
     public static UserFilter byFullNameContains(String substring)
     {
-        return user -> user.fullname().toLowerCase().contains(substring.toLowerCase());
+        return user -> user.fullname().equalsIgnoreCase(substring);
     }
 }
