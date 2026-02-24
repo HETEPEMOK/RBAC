@@ -4,10 +4,9 @@ import java.util.stream.Collectors;
 public class RoleManager implements Repository<Role> {
     private final Map<String, Role> rolesById = new HashMap<>();
     private final Map<String, Role> rolesByName = new HashMap<>();
-    private AssignmentManager assignmentManager; // для проверки назначений при удалении
+    private AssignmentManager assignmentManager;
 
     public RoleManager() {
-        // Пустой конструктор
     }
 
     public void setAssignmentManager(AssignmentManager assignmentManager) {
@@ -27,7 +26,6 @@ public class RoleManager implements Repository<Role> {
     @Override
     public boolean remove(Role role) {
         Objects.requireNonNull(role, "Role cannot be null");
-        // Проверяем, не назначена ли роль пользователям
         if (isRoleAssigned(role)) {
             throw new IllegalStateException("Cannot delete role that is assigned to users");
         }
@@ -112,7 +110,6 @@ public class RoleManager implements Repository<Role> {
         return findByFilter(filter);
     }
 
-    // Пример использования комбинированных фильтров
     public List<Role> findRolesByNameAndMinPermissions(String namePart, int minPermissions) {
         RoleFilter filter = RoleFilters.byNameContains(namePart)
                 .and(RoleFilters.hasAtLeastNPermissions(minPermissions));

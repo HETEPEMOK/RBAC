@@ -15,7 +15,6 @@ public class AssignmentManager implements Repository<RoleAssignment> {
     public void add(RoleAssignment assignment) {
         Objects.requireNonNull(assignment, "Assignment cannot be null");
 
-        // Проверяем существование пользователя и роли
         if (!userManager.exists(assignment.user().username())) {
             throw new IllegalArgumentException("User does not exist: " + assignment.user().username());
         }
@@ -23,7 +22,6 @@ public class AssignmentManager implements Repository<RoleAssignment> {
             throw new IllegalArgumentException("Role does not exist: " + assignment.role().getName());
         }
 
-        // Проверяем на дублирование активного назначения
         if (hasActiveAssignment(assignment.user(), assignment.role())) {
             throw new IllegalArgumentException("User already has active assignment for this role");
         }
@@ -148,7 +146,6 @@ public class AssignmentManager implements Repository<RoleAssignment> {
         if (assignment instanceof PermanentAssignment perm) {
             perm.revoke();
         } else {
-            // Для временных назначений просто удаляем или помечаем как неактивные
             assignmentsById.remove(assignmentId);
         }
     }
@@ -166,7 +163,6 @@ public class AssignmentManager implements Repository<RoleAssignment> {
         temp.extend(newExpirationDate);
     }
 
-    // Пример сложного комбинированного фильтра
     public List<RoleAssignment> findComplexAssignments(String username, String roleName,
                                                        String assigner, boolean onlyActive) {
         AssignmentFilter filter = AssignmentFilters.byUsername(username)
@@ -183,7 +179,6 @@ public class AssignmentManager implements Repository<RoleAssignment> {
         return findByFilter(filter);
     }
 
-    // Метод для получения статистики по назначениям
     public Map<String, Long> getAssignmentStatisticsByType() {
         Map<String, Long> stats = new HashMap<>();
         stats.put("PERMANENT", (long) getPermanentAssignments().size());
