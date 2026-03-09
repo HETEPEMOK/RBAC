@@ -79,4 +79,12 @@ public class RBACSystem {
         stats.append("========================================\\n");
         return stats.toString();
     }
+
+    public String getCurrentUsr() {return currentUsr;}
+
+    public void setCurrentUsr(String username)
+    {
+        if (userManager.exists(username)) this.currentUsr = username;
+        else throw new IllegalArgumentException("User not found: " + username);
+    }
 }
