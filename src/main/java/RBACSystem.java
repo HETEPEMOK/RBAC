@@ -81,7 +81,9 @@ public class RBACSystem {
     }
 
     public String getCurrentUsr() {return currentUsr;}
-
+    public UserManager getUserManager() {return userManager;}
+    public RoleManager getRoleManager() {return roleManager;}
+    public AssignmentManager getAssignmentManager() {return assignmentManager;}
     public void setCurrentUsr(String username)
     {
         if (userManager.exists(username)) this.currentUsr = username;
