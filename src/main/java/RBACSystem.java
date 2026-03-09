@@ -18,6 +18,7 @@ public class RBACSystem {
 
     public void initialize()
     {
+        if (roleManager.count() > 0 || userManager.count() > 0) {return;}
         Permission readUsers = new Permission("READ", "users", "Can read users");
         Permission writeUsers = new Permission("WRITE", "users", "Can write users");
         Permission deleteUsers = new Permission("DELETE", "users", "Can delete users");
@@ -76,7 +77,7 @@ public class RBACSystem {
         stats.append(String.format("Total Assignments: %d\n", assignmentManager.count()));
         stats.append(String.format("\tActive: %d\n", assignmentManager.getActiveAssignments().size()));
         stats.append(String.format("\tExpired/Inactive: %d\n", assignmentManager.getExpiredAssignments().size()));
-        stats.append("========================================\\n");
+        stats.append("========================================\n");
         return stats.toString();
     }
 
