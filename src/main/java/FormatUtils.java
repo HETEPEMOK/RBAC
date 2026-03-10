@@ -1,7 +1,7 @@
 import java.util.List;
 
 public class FormatUtils {
-    public static String foramtTable(String[] headers, List<String[]> rows)
+    public static String formatTable(String[] headers, List<String[]> rows)
     {
         if (headers == null || headers.length == 0) return "";
         int[] columnWidths = new int[headers.length];
@@ -83,13 +83,22 @@ public class FormatUtils {
         return "\n=== " + text + " " + "=".repeat(Math.max(0,60-text.length() - 5)) + "\n";
     }
 
-    public static String truncture(String text, int maxLength)
+    public static String truncate(String text, int maxLength)
     {
         if (text == null) return "";
         if (text.length() <= maxLength) return text;
         return text.substring(0, maxLength - 3) + "...";
     }
 
+    public static String padLeft(String text, int length)
+    {
+        if (text == null) text = "";
+        return String.format("%" + length + "s", text);
+    }
+    public static String repeat(String text, int count)
+    {
+        return text.repeat(Math.max(0, count));
+    }
     public static String padRight(String text, int length)
     {
         if (text == null) text = "";
@@ -97,8 +106,15 @@ public class FormatUtils {
     }
     public static String center(String text, int length)
     {
-        if (text == null) return "";
-        int padding = length - text.length();
+        if (text == null)
+        {
+            if (length > 0)
+            {
+                return " ".repeat(length);
+            }
+            return "";
+        }
+        int padding = Math.max(0,length - text.length());
         int leftPad = padding / 2;
         int rightPad = padding - leftPad;
         return " ".repeat(leftPad) + text + " ".repeat(rightPad);
