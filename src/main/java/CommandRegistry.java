@@ -124,21 +124,20 @@ public class CommandRegistry {
             UserManager um = system.getUserManager();
             try
             {
-                System.out.print("Enter username: ");
-                String username = scanner.nextLine().trim();
-
-                System.out.print("Enter full name: ");
-                String fullname = scanner.nextLine().trim();
-
-                System.out.print("Enter email: ");
-                String email = scanner.nextLine().trim();
+                String username = ConsoleUtils.promptString(scanner, "Enter username: ", true);
+                String fullname = ConsoleUtils.promptString(scanner, "Enter full name: ", true);
+                String email = ConsoleUtils.promptString(scanner, "Enter email: ", true);
 
                 User user = User.create(username, fullname, email);
                 um.add(user);
-                System.out.println("User created successfully: " + user.format());
+
+                system.getAuditLog().log("CREATE_USER", system.getCurrentUsr(), username,
+                        "User created: " + user.format());
+
+                ConsoleUtils.printSuccess("User created successfully: " + user.format());
             } catch (Exception e)
             {
-                System.err.println("Error creating user: " + e.getMessage());
+                ConsoleUtils.printError("Error creating user: " + e.getMessage());
             }
         }));
 
@@ -146,15 +145,14 @@ public class CommandRegistry {
             UserManager um = system.getUserManager();
             AssignmentManager am = system.getAssignmentManager();
 
-            System.out.print("Enter username: ");
-            String username = scanner.nextLine().trim();
+            String username = ConsoleUtils.promptString(scanner, "Enter username: ", true);
 
             Optional<User> userOpt = um.findByUsername(username);
             if (userOpt.isEmpty()) {
-                System.err.println("User not found: " + username);
+                ConsoleUtils.printError("User not found: " + username);
                 return;
             }
-
+            system.getAuditLog().log("VIEW_USER", system.getCurrentUsr(), username, "User viewed: " + username);
             User user = userOpt.get();
             System.out.println("\n=== User Details ===");
             System.out.println(user.format());
@@ -183,27 +181,23 @@ public class CommandRegistry {
         parser.registerCommand("user-update", "Update user information", ((scanner, system) -> {
             UserManager um = system.getUserManager();
 
-            System.out.print("Enter username to update: ");
-            String username = scanner.nextLine().trim();
-
+            String username = ConsoleUtils.promptString(scanner, "Enter username to update: ", true);
             if (!um.exists(username))
             {
-                System.err.println("User npt found: " + username);
+                ConsoleUtils.printError("User npt found: " + username);
                 return;
             }
 
             try {
-                System.out.print("Enter new full name: ");
-                String newFullName = scanner.nextLine().trim();
-
-                System.out.print("Enter new email: ");
-                String newEmail = scanner.nextLine().trim();
+                String newFullName = ConsoleUtils.promptString(scanner, "Enter new full name: ", true);
+                String newEmail = ConsoleUtils.promptString(scanner, "Enter new email: ", true);
 
                 um.update(username, newFullName, newEmail);
-                System.out.println("User updated successfully.");
+                ConsoleUtils.printSuccess("User updated successfully.");
+                system.getAuditLog().log("UPDATE_USER", system.getCurrentUsr(), username, "Change user: " + username);
             } catch (Exception e)
             {
-                System.err.println("Error updating user: " + e.getMessage());
+                ConsoleUtils.printError("Error updating user: " + e.getMessage());
             }
         }));
 
@@ -211,13 +205,11 @@ public class CommandRegistry {
             UserManager um = system.getUserManager();
             AssignmentManager am = system.getAssignmentManager();
 
-            System.out.print("Enter username to delete: ");
-            String username = scanner.nextLine().trim();
-
+            String username = ConsoleUtils.promptString(scanner, "Enter username to delete: ", true);
             Optional<User> userOpt = um.findByUsername(username);
             if (userOpt.isEmpty())
             {
-                System.err.println("User not found: " + username);
+                ConsoleUtils.printError("User not found: " + username);
                 return;
             }
 
@@ -228,11 +220,10 @@ public class CommandRegistry {
             {
                 System.out.println("User has " + assignments.size() + " assignments: ");
                 assignments.forEach(a -> System.out.println("  - " + a.role().getName()));
-                System.out.print("Delete user and all assignments? [Y/N]");
-                String confirm = scanner.nextLine().trim().toLowerCase();
-                if (!confirm.equals("y"))
+
+                if (ConsoleUtils.promptYesNo(scanner, "Delete user and all assignments? [Y/N]"))
                 {
-                    System.out.println("Delete cancelled.");
+                    ConsoleUtils.printError("Delete cancelled.");
                     return;
                 }
 
@@ -243,7 +234,8 @@ public class CommandRegistry {
             }
 
             um.remove(user);
-            System.out.println("User deleted successfully");
+            system.getAuditLog().log("DELETE_USER", system.getCurrentUsr(), username, "Delete user: " + username);
+            ConsoleUtils.printSuccess("User deleted successfully");
         }));
 
         parser.registerCommand("user-search", "Search users by filters", ((scanner, system) -> {
@@ -1028,5 +1020,53 @@ public class CommandRegistry {
                 System.out.println("Exit cancelled");
             }
         }));
+
+        parser.registerCommand("audit-log", "View audit log", ((scanner, system) -> {
+            system.getAuditLog().printLog();
+        }));
+
+        parser.registerCommand("audit-log-save", "Save audit log to file", ((scanner, system) -> {
+            String filename = ConsoleUtils.promptString(scanner, "Enter filename: ", true);
+            system.getAuditLog().saveToFile(filename);
+        }));
+
+        parser.registerCommand("report-users", "Generate user report", ((scanner, system) -> {
+            String report = ReportGenerator.generateUserReport(
+                    system.getUserManager(),
+                    system.getAssignmentManager()
+            );
+            System.out.println(report);
+            if (ConsoleUtils.promptYesNo(scanner, "Save as file?"))
+            {
+                String filename = ConsoleUtils.promptString(scanner, "Enter filename: ", true);
+                ReportGenerator.exportToFile(report, filename);
+            }
+        }));
+
+        parser.registerCommand("report-roles", "Generate role report", (scanner, system) -> {
+            String report = ReportGenerator.generateRoleReport(
+                    system.getRoleManager(),
+                    system.getAssignmentManager()
+            );
+            System.out.println(report);
+
+            if (ConsoleUtils.promptYesNo(scanner, "Save to file?")) {
+                String filename = ConsoleUtils.promptString(scanner, "Enter filename: ", true);
+                ReportGenerator.exportToFile(report, filename);
+            }
+        });
+
+        parser.registerCommand("report-matrix", "Generate permission matrix", (scanner, system) -> {
+            String report = ReportGenerator.generatePermissionMatrix(
+                    system.getUserManager(),
+                    system.getAssignmentManager()
+            );
+            System.out.println(report);
+
+            if (ConsoleUtils.promptYesNo(scanner, "Save to file?")) {
+                String filename = ConsoleUtils.promptString(scanner, "Enter filename: ", true);
+                ReportGenerator.exportToFile(report, filename);
+            }
+        });
     }
 }

@@ -1,6 +1,5 @@
 import java.util.Objects;
 import java.util.UUID;
-
 public abstract class AbstractRoleAssignment implements RoleAssignment{
     private final String assignmentId;
     private final User user;

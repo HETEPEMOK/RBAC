@@ -5,6 +5,7 @@ public class RBACSystem {
     private final UserManager userManager;
     private final RoleManager roleManager;
     private final AssignmentManager assignmentManager;
+    private final AuditLog auditLog = new AuditLog();
     private String currentUsr;
 
     public RBACSystem()
@@ -15,7 +16,7 @@ public class RBACSystem {
         this.roleManager.setAssignmentManager(assignmentManager);
         this.currentUsr = "system";
     }
-
+    public AuditLog getAuditLog() {return auditLog;}
     public void initialize()
     {
         if (roleManager.count() > 0 || userManager.count() > 0) {return;}
